@@ -71,7 +71,7 @@ body {
 }
 
 .light {
-	background: linear-gradient(rgba(255,255,255,0.3),rgba(255,255,255,0.3)); 
+	background: linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.5)); 
 }
 
 .red{
@@ -133,6 +133,10 @@ h5 {
 	border-radius: 10px;
 	background: #4D1100;
 	margin-bottom: 8px;
+	color: red;
+	text-align: center;
+	font-size: 16px;
+	line-height: 30px;
 }
 
 .start-button,
@@ -158,10 +162,15 @@ h5 {
 	margin-bottom: 3px;
 	margin-left: auto;
 	margin-right: auto;
-	border: 1px solid #333;
+	border: 2px solid #333;
 	border-radius: 4px;
 	background: #4D1100;
 }
+
+.strict-light-on {
+	background: red;
+}
+
 .strict-button {
 	background: yellow;
 }

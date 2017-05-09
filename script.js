@@ -1,22 +1,33 @@
 var simonGame = {
     init: function(){
         this.simonSequence = [];
-        this.playerSequence = [];
-        this.stepCount = 0;
-        this.strict = false;
+        this.stepCount = 0;        
         this.totalSteps = 3;
-        this.win = false;
         this.err = false;
-        this.playComplete = false;
-        this.timer = undefined;
+        //this.timer = undefined;
+        this.playSequenceTimer = [];
         this.sequenceTimer = [];
-        this.errorTimer = undefined;
+        this.errorTimer = [];
+        this.winTimer = [];
+        this.strict = $(".strict-light").hasClass("strict-light-on");
         this.displayCount();
+        
+        //alert("game initiated");
         var that = this;
-        $(".start").click(function(){
+
+        $(".start").on("click",function(){
             $(".start").off("click");
             that.startGame();
-    });
+        });
+
+        $(".strict-button").click(function(){
+            console.log("strict button clicked");
+            if(that.strict){
+                $(".strict-light").removeClass("strict-light-on");               
+            }else{
+                $(".strict-light").addClass("strict-light-on");
+            }
+        });
     },
 
     audioPlay: function(index){
@@ -29,116 +40,16 @@ var simonGame = {
         new Audio(baseUrl + audio[index]).play();
     },
 
-    enableBtn: function(){
-        var that  = this;
-        var count = 0;
-        $("#0, #1, #2, #3").on({
-            "mousedown": function(){
-                $(this).addClass("light");      
-            },
-            "mouseup": function(){
-                $(this).removeClass("light");
-            },
-            "click": function(){
-                var i = parseInt($(this).attr("id"));
-                that.audioPlay(i);
-
-            //=====================
-                if(that.errorTimer){
-                    var timer = that.errorTimer;
-                    clearTimeout(timer);
-                    that.err = false;
-                    that.errorTimer = undefined;
-                };
-
-                var btnId = parseInt($(this).attr("id"));
-            
-                console.log("simonSequence: "+that.simonSequence);
-                console.log("player input: "+btnId);
-
-                that.checkPlayersInput(btnId, count);
-                console.log("Error: "+that.err);
-
-                if(that.err){
-                    that.disableBtn();
-                    that.notifyErr();  
-                    count = 0; 
-                    that.playSequenceAfter(3);            
-                }else{
-                    count++;
-                    if(count === that.simonSequence.length){
-                        if(that.stepCount === that.totalSteps){
-                            that.disableBtn();
-                            that.notifyWin();
-                            setTimeout(function(){
-                                
-                                that.init();
-                            }, 5000);
-                        }else{
-                            that.disableBtn();
-                            that.addStep();  
-                            count = 0; 
-                            that.playSequenceAfter(2);
-                        }
-                                      
-                    }else{
-                        that.set5SecondsErrorTimer();
-                    }
-                };
-            //===================================
-            }
-        });
+    btnFlash: function(btnId){
+        $("#"+btnId).addClass("light");
+        setTimeout(function(){
+            $("#"+btnId).removeClass("light");
+        },200);
     },
 
-    /*getPlayersInput: function(){
-        this.enableBtn();
-        
-        var that = this;
-        var count = 0;
-        $("#0, #1, #2, #3").click(function(){
-            if(that.playComplete){
-            
-            var btnId = parseInt($(this).attr("id"));
-            
-            console.log("simonSequence: "+that.simonSequence);
-            console.log("player input: "+btnId);
-
-            that.checkPlayersInput(btnId, count);
-            console.log("Error: "+that.err);
-
-            if(that.err){
-                that.disableBtn();
-                that.notifyErr();  
-                count = 0; 
-                setTimeout(function(){
-                    that.playSequence();
-                }, 2000);            
-            }else{
-                count++;
-                if(count === that.simonSequence.length){
-                    that.disableBtn();
-                    that.addStep();  
-                    count = 0; 
-                    setTimeout(function(){
-                        that.playSequence();
-                    }, 2000);               
-                }
-            };
-            
-           
-            
-            }
-        });
-    },*/
-    set5SecondsErrorTimer: function(){
-        var that = this;
-        this.errorTimer = setTimeout(function(){
-            that.err = true;
-            that.disableBtn();
-            that.notifyErr();  
-            count = 0; 
-            that.playSequenceAfter(3);       
-        }, 5000);
+    triggerBtn: function(btnId){
+        this.audioPlay(btnId);
+        this.btnFlash(btnId);
     },
 
     checkPlayersInput: function(btnId, count){
@@ -148,24 +59,6 @@ var simonGame = {
             this.err = false;
         }
     },
-    
-    notifyErr: function(){
-        $(".count .show").html("Err!");
-    },
-
-    notifyWin: function(){
-        $(".count .show").html("Win!");
-        var that = this;
-        [0,1,2,3,0,1,2,3].forEach(function(btnId, index){
-            setTimeout(function(){
-                that.triggerBtn(btnId);
-            }, 1000+200*index);
-        });
-        [0,1,2,3].forEach(function(btnId){
-            that.btnFlash(btnId);
-        });
-
-    },
 
     displayCount: function(){
         if(this.stepCount > 9){
@@ -174,35 +67,103 @@ var simonGame = {
             $(".count .show").html("--");
         }else {
             $(".count .show").html("0 " +this.stepCount);
-        }
+        };
         
+    },
+
+    notifyErr: function(){
+        $(".count .show").html("Err!");
+    },
+
+    notifyWin: function(){
+        $(".count .show").html("Win!");
+        var that = this;
+
+        var timer = setTimeout(function(){
+            [0,1,2,3].forEach(function(btnId){
+                that.btnFlash(btnId);
+            })
+        },1000);
+
+        this.winTimer.push(timer);
+
+        [0,1,2,3,0,1,2,3].forEach(function(btnId, index){
+            var flashtimer = setTimeout(function(){
+                        that.triggerBtn(btnId);
+                        }, 1500+200*index);
+            that.winTimer.push(flashtimer);
+        });
     },
 
     disableBtn: function(){
         $("#0, #1, #2, #3").off();
     },
 
-    btnFlash: function(btnId){
-        $("#"+btnId).addClass("light");
-        setTimeout(function(){
-            $("#"+btnId).removeClass("light");
-        },100);
-    },
+    getPlayersInput: function(){
+        var that  = this;
+        var count = 0;
+        $("#0, #1, #2, #3").on({
+            "mousedown": function(){
+                $(this).addClass("light");      
+            },
+            "mouseup": function(){
+                $(this).removeClass("light");
+            },
+            "click": function(event){  
+                //event.stopPropagation();  
+                if(that.errorTimer.length){
+                    that.clearTimeArrayOut(that.errorTimer);
+                    that.errorTimer = [];
+                }           
+                clearTimeout(that.errorTimer);
 
-    triggerBtn: function(btnId){
-        this.audioPlay(btnId);
-        this.btnFlash(btnId);
-    },
+                var btnId = parseInt($(this).attr("id"));
+                that.audioPlay(btnId);
+            
+                that.strict = $(".strict-light").hasClass("strict-light-on");
+                console.log("strict: "+ that.strict);
 
-    addStep: function(){
-        var newBtnId = Math.floor(Math.random()*4);
-        this.simonSequence.push(newBtnId);
-        this.stepCount++;
+                that.checkPlayersInput(btnId, count);
+
+                if(that.err){                   
+                    if(that.strict){
+                        //count = 0;
+                        that.strictPlay();
+                    }else{
+                        count = 0;
+                        that.playSequenceAgain();
+                    };            
+                }else{
+                    count++;
+                    //player complete the sequence
+                    if(count === that.simonSequence.length){
+                        that.disableBtn();
+                        count = 0;
+                        //player win if this was the last sequence
+                        if(that.stepCount === that.totalSteps){
+                            that.reset();
+                            that.notifyWin();
+                            var wintimer = setTimeout(function(){                               
+                                that.init();
+                            }, 4000);
+                            that.winTimer.push(wintimer);
+                        }else{                           
+                            that.addStep();                               
+                            that.playSequenceAfter(2);
+                        }
+                    //wait for the next input                  
+                    }else{
+                        that.set5SecondsErrorTimer();
+                    }
+                };
+            //===================================
+            }
+        });
     },
 
     playSequence: function(){    
         this.displayCount();    
-        this.playComplete = false;
+        this.sequenceTimer = [];
         var timer;
         var that = this;
         var sequenceLength = this.simonSequence.length;
@@ -211,11 +172,10 @@ var simonGame = {
             (function(i, btnId){
                 timer = setTimeout(function(){               
                     that.triggerBtn(btnId);
-                    that.sequenceTimer.shift();
                     if(i===sequenceLength-1){
-                        that.playComplete = true;
-                        that.enableBtn();
                         that.set5SecondsErrorTimer();
+                        that.getPlayersInput();
+                        
                     };            
                 },1000*i);               
             })(i, btnId);
@@ -227,50 +187,115 @@ var simonGame = {
         var that = this;
         var timer = setTimeout(function(){
                         that.playSequence();
-                        that.timer = undefined;
+                        //that.timer = undefined;
                     }, 1000*seconds);
-        this.timer = timer;
+        this.playSequenceTimer.push(timer);
+    },
+
+    playSequenceAgain: function () {
+        this.disableBtn();
+        this.notifyErr();   
+        this.playSequenceAfter(2);
+    },
+
+    addStep: function(){
+        var newBtnId = Math.floor(Math.random()*4);
+        this.simonSequence.push(newBtnId);
+        this.stepCount++;
+        console.log("step: "+ this.stepCount);
+        console.log("simonSequence: "+this.simonSequence);
+    },
+
+    set5SecondsErrorTimer: function(){
+        var that = this;
+        //play sequence again, if input not go on after 5 seconds
+        var errortimer = setTimeout(function(){
+            that.strict = $(".strict-light").hasClass("strict-light-on");
+            if(that.strict){
+                console.log("5s reset");
+                that.strictPlay();
+            }else{
+                that.playSequenceAgain();
+            };                            
+        }, 5000);
+        this.errorTimer.push(errortimer);
+    },   
+
+    strictPlay: function(){     
+        var that = this; 
+        console.log("wrong btn reset");
+        this.reset();  
+        this.disableBtn();        
+        this.notifyErr();
+        var timer = setTimeout(function(){                               
+                    that.init();
+                    $(".start").off("click");
+                    that.startGame();
+                }, 2000);
+        this.winTimer.push(timer);      
+       
     },
 
     startGame: function(){
-        //this.init();
         this.addStep();
-        var that = this;
         this.playSequenceAfter(2);      
     },
 
-    reset: function(){
-        if(this.timer){
-            var timer = this.timer;
-            clearTimeout(timer);
-        };
-
-        if(this.sequenceTimer.length){
-            this.sequenceTimer.forEach(function(timer){
+    clearTimeArrayOut: function(timerArray){
+        if(timerArray.length){
+            timerArray.forEach(function(timer){
                 clearTimeout(timer);
             });
+        }        
+    },
+
+    reset: function(){
+        var that = this;
+       /* if(this.playSequenceTimer.length){
+            this.clearTimeArrayOut(that.playSequenceTimer);
+        };       
+        if(this.errorTimer.length){
+            this.clearTimeArrayOut(that.errorTimer);
         };
-        if(this.errorTimer){
-            var errortimer = this.errorTimer;
-            clearTimeout(errortimer);
-        } 
+        if(this.sequenceTimer.length){
+            this.clearTimeArrayOut(that.sequenceTimer);
+        };
+        if(this.winTimer.length){
+            this.clearTimeArrayOut(that.winTimer);
+        };     */    
 
+        this.clearTimeArrayOut(that.playSequenceTimer);
+        this.clearTimeArrayOut(that.errorTimer);
+        this.clearTimeArrayOut(that.sequenceTimer);
+        this.clearTimeArrayOut(that.winTimer);
         $(".count .show").html(" ");
-        //this.init();
-    }
+        console.log("game reset");
+    },
 
+    play: function(){
+        var that = this;
+        $(".off").click(function(){  
+            that.disableBtn();     
+            that.reset();      
+            $(".start").off("click");
+            $(".strict").off("click");
+            $(this).removeClass("hidden");
+            $(".on").addClass("hidden"); 
+            $(".strict-light").removeClass("strict-light-on");
+                 
+            
+        });
+
+        $(".on").click(function(event){
+            event.stopPropagation();
+            $(this).removeClass("hidden");
+            $(".off").addClass("hidden");
+            that.init();
+        });
+    }
+    
 };
 
 $(document).ready(function(){
-    $(".off").click(function(){
-        $(this).removeClass("hidden");
-        $(".on").addClass("hidden");
-        simonGame.reset();
-    });
-
-    $(".on").click(function(){
-        $(this).removeClass("hidden");
-        $(".off").addClass("hidden");
-        simonGame.init();
-    });
+    simonGame.play();
 })

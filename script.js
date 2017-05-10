@@ -34,8 +34,8 @@ var simonGame = {
     },
 
     audioPlay: function(index){
-        //var baseUrl = "https://s3.amazonaws.com/freecodecamp/";
-        var baseUrl = "audio/";
+        var baseUrl = "https://s3.amazonaws.com/freecodecamp/";
+        //var baseUrl = "audio/";
         var audio = ["simonSound1.mp3",
                      "simonSound2.mp3",
                      "simonSound3.mp3",

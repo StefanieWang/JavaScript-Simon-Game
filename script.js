@@ -2,7 +2,7 @@ var simonGame = {
     init: function(){
         this.simonSequence = [];
         this.stepCount = 0;        
-        this.totalSteps = 3;
+        this.totalSteps = 20;
         this.err = false;
         this.playSequenceTimer = [];
         this.sequenceTimer = [];

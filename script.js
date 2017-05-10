@@ -4,24 +4,27 @@ var simonGame = {
         this.stepCount = 0;        
         this.totalSteps = 3;
         this.err = false;
-        //this.timer = undefined;
         this.playSequenceTimer = [];
         this.sequenceTimer = [];
         this.errorTimer = [];
         this.winTimer = [];
         this.strict = $(".strict-light").hasClass("strict-light-on");
         this.displayCount();
-        
-        //alert("game initiated");
-        var that = this;
+        this.clickToStart();
+        this.clickToStrictPlay();       
+    },
 
+    clickToStart: function(){
+        var that = this;
         $(".start").on("click",function(){
             $(".start").off("click");
             that.startGame();
         });
+    },
 
+    clickToStrictPlay: function(){
+        var that = this;
         $(".strict-button").click(function(){
-            console.log("strict button clicked");
             if(that.strict){
                 $(".strict-light").removeClass("strict-light-on");               
             }else{
@@ -64,7 +67,7 @@ var simonGame = {
         if(this.stepCount > 9){
             $(".count .show").html(this.stepCount);
         }else if(this.stepCount === 0){
-            $(".count .show").html("--");
+            $(".count .show").html("&#8211; &#8211;");
         }else {
             $(".count .show").html("0 " +this.stepCount);
         };
@@ -78,15 +81,14 @@ var simonGame = {
     notifyWin: function(){
         $(".count .show").html("Win!");
         var that = this;
-
+        //button flash all together
         var timer = setTimeout(function(){
             [0,1,2,3].forEach(function(btnId){
                 that.btnFlash(btnId);
             })
         },1000);
-
         this.winTimer.push(timer);
-
+        //button flash in turns
         [0,1,2,3,0,1,2,3].forEach(function(btnId, index){
             var flashtimer = setTimeout(function(){
                         that.triggerBtn(btnId);
@@ -112,22 +114,17 @@ var simonGame = {
             "click": function(event){  
                 //event.stopPropagation();  
                 if(that.errorTimer.length){
+                    //clear the 5 seconds waiting error timer
                     that.clearTimeArrayOut(that.errorTimer);
                     that.errorTimer = [];
-                }           
-                clearTimeout(that.errorTimer);
-
+                };           
+                //clearTimeout(that.errorTimer);
                 var btnId = parseInt($(this).attr("id"));
-                that.audioPlay(btnId);
-            
+                that.audioPlay(btnId);           
                 that.strict = $(".strict-light").hasClass("strict-light-on");
-                console.log("strict: "+ that.strict);
-
                 that.checkPlayersInput(btnId, count);
-
                 if(that.err){                   
                     if(that.strict){
-                        //count = 0;
                         that.strictPlay();
                     }else{
                         count = 0;
@@ -156,17 +153,16 @@ var simonGame = {
                         that.set5SecondsErrorTimer();
                     }
                 };
-            //===================================
             }
         });
     },
 
     playSequence: function(){    
         this.displayCount();    
-        this.sequenceTimer = [];
-        var timer;
+        this.sequenceTimer = [];       
         var that = this;
         var sequenceLength = this.simonSequence.length;
+        var timer;
         for(var i=0; i<sequenceLength; i++){
             var btnId = that.simonSequence[i];
             (function(i, btnId){
@@ -202,17 +198,14 @@ var simonGame = {
         var newBtnId = Math.floor(Math.random()*4);
         this.simonSequence.push(newBtnId);
         this.stepCount++;
-        console.log("step: "+ this.stepCount);
-        console.log("simonSequence: "+this.simonSequence);
     },
 
     set5SecondsErrorTimer: function(){
         var that = this;
-        //play sequence again, if input not go on after 5 seconds
+        //play sequence again if input not go on after 5 seconds
         var errortimer = setTimeout(function(){
             that.strict = $(".strict-light").hasClass("strict-light-on");
             if(that.strict){
-                console.log("5s reset");
                 that.strictPlay();
             }else{
                 that.playSequenceAgain();
@@ -223,7 +216,6 @@ var simonGame = {
 
     strictPlay: function(){     
         var that = this; 
-        console.log("wrong btn reset");
         this.reset();  
         this.disableBtn();        
         this.notifyErr();
@@ -231,7 +223,7 @@ var simonGame = {
                     that.init();
                     $(".start").off("click");
                     that.startGame();
-                }, 2000);
+        }, 2000);
         this.winTimer.push(timer);      
        
     },
@@ -250,26 +242,12 @@ var simonGame = {
     },
 
     reset: function(){
-        var that = this;
-       /* if(this.playSequenceTimer.length){
-            this.clearTimeArrayOut(that.playSequenceTimer);
-        };       
-        if(this.errorTimer.length){
-            this.clearTimeArrayOut(that.errorTimer);
-        };
-        if(this.sequenceTimer.length){
-            this.clearTimeArrayOut(that.sequenceTimer);
-        };
-        if(this.winTimer.length){
-            this.clearTimeArrayOut(that.winTimer);
-        };     */    
-
+        var that = this;   
         this.clearTimeArrayOut(that.playSequenceTimer);
         this.clearTimeArrayOut(that.errorTimer);
         this.clearTimeArrayOut(that.sequenceTimer);
         this.clearTimeArrayOut(that.winTimer);
         $(".count .show").html(" ");
-        console.log("game reset");
     },
 
     play: function(){
@@ -281,9 +259,7 @@ var simonGame = {
             $(".strict").off("click");
             $(this).removeClass("hidden");
             $(".on").addClass("hidden"); 
-            $(".strict-light").removeClass("strict-light-on");
-                 
-            
+            $(".strict-light").removeClass("strict-light-on");            
         });
 
         $(".on").click(function(event){

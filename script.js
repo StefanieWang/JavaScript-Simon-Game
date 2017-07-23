@@ -34,12 +34,13 @@ var simonGame = {
     },
 
     audioPlay: function(index){
-        var baseUrl = "https://s3.amazonaws.com/freecodecamp/";
-        //var baseUrl = "audio/";
+        //var baseUrl = "https://s3.amazonaws.com/freecodecamp/";
+        var baseUrl = "audio/";
         var audio = ["simonSound1.mp3",
                      "simonSound2.mp3",
                      "simonSound3.mp3",
-                     "simonSound4.mp3"];
+                     "simonSound4.mp3"
+                    ];
         new Audio(baseUrl + audio[index]).play();
     },
 
@@ -75,7 +76,10 @@ var simonGame = {
     },
 
     notifyErr: function(){
+        //var baseUrl = "https://s3.amazonaws.com/freecodecamp/";
+        var baseUrl = "audio/";
         $(".count .show").html("Err!");
+        new Audio(baseUrl + "simonError.mp3").play();
     },
 
     notifyWin: function(){
